@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct WeatherForecastApp: App {
+    @StateObject private var locations = LocationViewModel()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ForecastView(city: locations.locations.activeLocation)
+                .environmentObject(locations)
         }
     }
 }
