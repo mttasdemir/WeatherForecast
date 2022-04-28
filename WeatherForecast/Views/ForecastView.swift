@@ -9,11 +9,11 @@ import SwiftUI
 import MapKit
 
 struct ForecastView: View {
-    @EnvironmentObject var locations: LocationViewModel
+    @EnvironmentObject var model: LocationViewModel
     @State private var forecasts: Array<Forecast> = []
     @State private var coordinates = MKCoordinateRegion()
     let city: City
-
+    let linearGradient = LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom)
     @State private var didError: Bool = false
     @State private var errorMessage: String = ""
     
@@ -23,8 +23,8 @@ struct ForecastView: View {
                 if forecasts.isEmpty {
                     ProgressView().scaleEffect(2.0)
                 } else {
-                    Rectangle()
-                        .foregroundColor(.blue)
+                    linearGradient
+                        .opacity(0.6)
                     VStack {
                         VStack {
                             Text(city.name)
@@ -76,7 +76,7 @@ struct ForecastView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 do {
-                    forecasts = try await locations.forecast(for: city)
+                    forecasts = try await model.forecast(for: city)
                 }
                 catch {
                     didError = true
