@@ -12,8 +12,8 @@ struct WeatherForecastApp: App {
     @StateObject private var locations = LocationViewModel()
     var body: some Scene {
         WindowGroup {
-            //LocationsView()
-            ForecastView(city: locations.locations.activeLocation)
+//            LocationsView()
+            ForecastView(city: locations.locations.activeLocation, showToolbar: true)
                 .environmentObject(locations)
         }
     }

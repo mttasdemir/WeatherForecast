@@ -13,5 +13,5 @@ struct Location {
 }
 
 extension Location {
-    static let sampleData: Location = Location(activeLocation: City.sampleData!, locations: [City.sampleData!, City.sampleData!, City.sampleData!])
+    static let sampleData: Location = Location(activeLocation: City.sampleData!, locations: [City.sampleData!])
 }

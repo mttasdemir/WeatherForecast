@@ -6,13 +6,41 @@
 //
 
 import Foundation
+import SwiftUI
 import UIKit
 import Combine
 
 class LocationViewModel: ObservableObject {
     @Published var locations: Location = Location.sampleData
     
+    func addCity(_ city: City) {
+        locations.locations.append(city)
+    }
+    
     // MARK: - Intent
+    
+    func updateCityForecast() async {
+        for city in locations.locations {
+            if let index = locations.locations.firstIndex(where: { $0.id == city.id }) {
+                let forecast = try? await currentForecast(of: city).first
+                DispatchQueue.main.async {
+                    self.locations.locations[index].forecast = forecast
+                }
+            }
+        }
+    }
+    
+    func currentForecast(of city: City) async throws -> Array<Forecast> {
+        guard let url = Urls.currentForecastUrl(for: city) else { throw GeneralError.invalidUrl }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw GeneralError.invalidServerResponse }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = JSONDecoder.DateDecodingStrategy.iso8601
+        return try decoder.decode(Array<Forecast>.self, from: data)
+        
+    }
     
     func forecast(for city: City) async throws -> Array<Forecast> {
         guard let url = Urls.forecastUrl(for: city) else { throw GeneralError.invalidUrl }
@@ -30,8 +58,25 @@ class LocationViewModel: ObservableObject {
         
     }
     
-    func searchCities(for key: String) -> Array<City> {
-        [locations.activeLocation, locations.activeLocation]
+    @Published var cities: (cities: Array<City>?, error: Error?) = (nil, nil)
+    @MainActor
+    func searchCities(for key: String) async {
+        guard let url = Urls.citySearchUrl(for: key) else {
+            self.cities = (nil, GeneralError.invalidUrl)
+            return
+        }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                self.cities = (nil, GeneralError.invalidUrl)
+                return
+            }
+            let cities = try JSONDecoder().decode(Array<City>.self, from: data)
+            self.cities = (cities, nil)
+        }
+        catch {
+            self.cities = (nil, error)
+        }
     }
     
     // MARK: - Publisher verison

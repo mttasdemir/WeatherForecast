@@ -12,10 +12,16 @@ struct ForecastView: View {
     @EnvironmentObject var model: LocationViewModel
     @State private var forecasts: Array<Forecast> = []
     @State private var coordinates = MKCoordinateRegion()
-    let city: City
+    @State private var city: City
+    let showToolbar: Bool
     let linearGradient = LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom)
     @State private var didError: Bool = false
     @State private var errorMessage: String = ""
+    
+    init(city: City, showToolbar: Bool) {
+        self.showToolbar = showToolbar
+        self._city = State(initialValue: city)
+    }
     
     var body: some View {
         NavigationView {
@@ -64,16 +70,17 @@ struct ForecastView: View {
                     }
                     .toolbar {
                         ToolbarItemGroup(placement: .bottomBar) {
-                            Button {
-                            } label: { Image(systemName: "ellipsis.circle") }
-                            NavigationLink(destination: LocationsView(), label: { Image(systemName: "list.bullet")})
+                            if showToolbar {
+                                Button {
+                                } label: { Image(systemName: "ellipsis.circle") }
+                                NavigationLink(destination: LocationsView(activeCity: $city), label: { Image(systemName: "list.bullet")})
+                            }
                         }
                     }
                 }
             }
             .foregroundColor(.white)
             .ignoresSafeArea()
-            .navigationBarTitleDisplayMode(.inline)
             .task {
                 do {
                     forecasts = try await model.forecast(for: city)
@@ -97,6 +104,6 @@ struct ForecastView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ForecastView(city: City.sampleData!)
+        ForecastView(city: City.sampleData!, showToolbar: true)
     }
 }
