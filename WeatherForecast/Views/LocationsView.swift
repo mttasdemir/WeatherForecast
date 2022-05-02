@@ -17,6 +17,7 @@ struct LocationsView: View {
     @State private var searchCity: String = ""
     @State private var newCity: City = City.sampleData!
     @State private var showNewCity: Bool = false
+    @State private var unitType: Forecast.Unit = .C
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -48,7 +49,7 @@ struct LocationsView: View {
                 } else {
                     VStack {
                         ForEach(model.locations.locations) { city in
-                            CityRow(city: city)
+                            CityRow(city: city, unit: unitType)
                                 .onTapGesture {
                                     activeCity = city
                                     dismiss()
@@ -74,14 +75,32 @@ struct LocationsView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle("Weather")
         .searchable(text: $searchCity, prompt: Text("Search for a city"))
+        .toolbar {
+            ToolbarItem {
+                contextMenu
+            }
+        }
+    }
+    
+    var contextMenu: some View {
+        Menu {
+            EditButton()
+            Picker("Unit", selection: $unitType) {
+                Text("Celsius").tag(Forecast.Unit.C)
+                Text("Fahrenheit").tag(Forecast.Unit.F)
+            }
+        }
+        label: { Image(systemName: "ellipsis.circle") }
     }
 }
 
 
 struct LocationsView_Preview: PreviewProvider {
     static var previews: some View {
-        LocationsView(activeCity: .constant(City.sampleData!))
-            .environmentObject(LocationViewModel())
+        NavigationView {
+            LocationsView(activeCity: .constant(City.sampleData!))
+                .environmentObject(LocationViewModel())
+        }
     }
 }
 
@@ -104,9 +123,10 @@ struct SearchResultRow: View {
 
 struct CityRow: View {
     let city: City
+    let unit: Forecast.Unit
     var body: some View {
         ZStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 8)
                 .fill(.blue)
                 .frame(maxHeight: 90)
             HStack {
@@ -116,7 +136,7 @@ struct CityRow: View {
                     Text("\(city.forecast?.iconPhrase ?? "-")").font(.system(size: 15))
                 }
                 Spacer()
-                Text("\(city.forecast?.temperatureInCelcius ?? 0)\u{00B0}").font(.system(size: 40))
+                Text("\(city.forecast?.temperature(in: unit) ?? 0)\u{00B0}").font(.system(size: 40))
             }
             .padding()
         }

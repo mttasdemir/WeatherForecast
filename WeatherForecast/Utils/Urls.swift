@@ -9,7 +9,7 @@ import Foundation
 
 struct Urls {
     static let baseUrl = "http://dataservice.accuweather.com"
-    static let apikey = "6S9eEFG2paWHpVVztmLiwbIdUSMTFzkU"
+    static let apikey = "FKt2Xv7aR9E5RIloAZVtvTOeIRiW2sJB"
     
     static func forecastUrl(for city: City) -> URL? {
         let url = baseUrl + "/forecasts/v1/hourly/12hour/\(city.key)?apikey=\(apikey)&details=true"

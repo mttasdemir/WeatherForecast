@@ -17,10 +17,11 @@ struct ForecastView: View {
     let linearGradient = LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom)
     @State private var didError: Bool = false
     @State private var errorMessage: String = ""
+    @State private var temperatureUnit: Forecast.Unit = .C
     
     init(city: City, showToolbar: Bool) {
         self.showToolbar = showToolbar
-        self._city = State(initialValue: city)
+        self._city = .init(initialValue: city)
     }
     
     var body: some View {
@@ -34,7 +35,7 @@ struct ForecastView: View {
                     VStack {
                         VStack {
                             Text(city.name)
-                            Text("\(forecasts.first!.temperatureInCelcius)\u{00B0}")
+                            Text("\(forecasts.first!.temperature(in: temperatureUnit))\u{00B0}")
                             Text("\(forecasts.first!.iconPhrase)")
                                 .font(.system(size: 20))
                                 .padding(.trailing, 15)
@@ -49,7 +50,7 @@ struct ForecastView: View {
                                         VStack {
                                             Text(forecast.hour, format: .twoDigitNumber)
                                             Image(String(forecast.weatherIcon))
-                                            Text("\(forecast.temperatureInCelcius)\u{00B0}")
+                                            Text("\(forecast.temperature(in: temperatureUnit))\u{00B0}")
                                         }
                                     }
                                 }
@@ -71,9 +72,20 @@ struct ForecastView: View {
                     .toolbar {
                         ToolbarItemGroup(placement: .bottomBar) {
                             if showToolbar {
-                                Button {
-                                } label: { Image(systemName: "ellipsis.circle") }
-                                NavigationLink(destination: LocationsView(activeCity: $city), label: { Image(systemName: "list.bullet")})
+                                Menu {
+                                    Picker("Unit", selection: $temperatureUnit) {
+                                        Text("Celsius").tag(Forecast.Unit.C)
+                                        Text("Fahrenheit").tag(Forecast.Unit.F)
+                                    }
+                                    
+                                } label: {
+                                    Image(systemName: "ellipsis.circle")
+                                }
+                                NavigationLink(destination: LocationsView(activeCity: $city),
+                                               label: {
+                                                    Image(systemName: "list.bullet")
+                                    
+                                })
                             }
                         }
                     }

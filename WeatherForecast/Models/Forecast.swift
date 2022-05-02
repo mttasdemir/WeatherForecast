@@ -34,10 +34,10 @@ struct Forecast: Decodable, Hashable, Identifiable {
             case value = "Value"
             case unit = "Unit"
         }
-        
-        enum Unit: String, Decodable {
-             case F = "F", C = "C"
-        }
+    }
+    
+    enum Unit: String, Decodable, CaseIterable{
+        case F = "F", C = "C"
     }
 
     var epochAsDate: Date {
@@ -48,8 +48,11 @@ struct Forecast: Decodable, Hashable, Identifiable {
         Calendar(identifier: Calendar.Identifier.gregorian).dateComponents([.hour], from: self.date).hour!
     }
     
-    var temperatureInCelcius: Int {
-        (temperature.value - 32) * 5 / 9
+    func temperature(in unit: Unit) -> Int {
+        switch unit {
+        case .F: return temperature.value
+        case .C: return (temperature.value - 32) * 5 / 9
+        }
     }
 }
 
